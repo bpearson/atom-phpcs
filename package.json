@@ -1,0 +1,14 @@
+{
+  "name": "atom-phpcs",
+  "main": "./lib/atom-phpcs",
+  "version": "0.1.0",
+  "description": "Atom plugin for PHP_CodeSniffer",
+  "activationEvents": [],
+  "repository": "https://github.com/bpearson/atom-phpcs",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.50.0"
+  },
+  "dependencies": {
+  }
+}

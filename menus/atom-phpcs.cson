@@ -1,0 +1,16 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+'context-menu':
+  '.overlayer':
+      'Enable atom-phpcs': 'atom-phpcs:activate'
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'PHP CodeSniffer'
+      'submenu': [
+        { 'label': 'Run PHP CodeSniffer', 'command': 'atom-phpcs:codesniff' }
+      ]
+    ]
+  }
+]
