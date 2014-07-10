@@ -20,6 +20,13 @@ class AtomPHPCSView
     @editorView.command 'atom-phpcs:codesniff', =>
       @updateErrors()
 
+  getConfig: (key)->
+    value = atom.config.defaultSettings['atom-phpcs'][key]
+    if (atom.config.settings['atom-phpcs'][key])
+        value = atom.config.settings['atom-phpcs'][key]
+    return value
+
+
   moveToNextError: ->
     cursorLineNumber = @editor.getCursorBufferPosition().row + 1
     nextErrorLineNumber = null
@@ -66,12 +73,14 @@ class AtomPHPCSView
   generateErrors: (callback)->
     editor     = atom.workspace.getActiveEditor()
     filepath   = editor.getPath()
+    command    = @getConfig('path')
+    standard   = @getConfig('standard')
     directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
     output     = []
     errorLines = []
     new BufferedProcess({
-      command: '/usr/bin/phpcs'
-      args: ["-n", "--report=csv", "--standard=Squiz", filepath]
+      command: command
+      args: ["-n", "--report=csv", "--standard="+standard, filepath]
       options: {
         cwd: directory
       }
