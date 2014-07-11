@@ -85,9 +85,9 @@ class AtomPHPCSView
         cwd: directory
       }
       stdout: (cs_output) =>
-        output = cs_output.split('\n')
+        output = cs_output.replace('\r', '').split('\n')
       stderr: (cs_error) =>
-        errorLines = cs_error.split('\n')
+        errorLines = cs_error.replace('\r', '').split('\n')
       exit: (code) =>
         if code is 2
           atom.confirm
