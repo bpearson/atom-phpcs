@@ -22,7 +22,7 @@ class AtomPHPCSView
 
   getConfig: (key)->
     value = atom.config.defaultSettings['atom-phpcs'][key]
-    if (atom.config.settings['atom-phpcs'][key])
+    if (atom.config.settings['atom-phpcs']? && atom.config.settings['atom-phpcs'][key]? && atom.config.settings['atom-phpcs'][key] != null)
         value = atom.config.settings['atom-phpcs'][key]
     return value
 
