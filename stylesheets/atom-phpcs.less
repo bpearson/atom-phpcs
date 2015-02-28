@@ -1,7 +1,6 @@
 @import "syntax-variables";
 
-.editor {
-  .gutter .line-number {
+.gutter .line-number {
     &.atom-phpcs-error {
       border-right: 2px solid @syntax-color-modified;
       padding-right: 0px;
@@ -17,20 +16,19 @@
       border-right: 2px solid @syntax-color-removed;
       padding-right: ~"calc(calc(0.5em - 2px) * -1)";
     }
-  }
+}
 
-  &.atom-phpcs-error:before {
+&.atom-phpcs-error:before {
     content: "";
     color: @syntax-color-modified;
-  }
+}
 
-  &.atom-phpcs-warning:before {
+&.atom-phpcs-warning:before {
     content: "";
     color: @syntax-color-added;
-  }
+}
 
-  &.atom-phpcs-spare:before {
+&.atom-phpcs-spare:before {
     content: "";
     color: @syntax-color-removed;
-  }
 }

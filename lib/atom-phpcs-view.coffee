@@ -5,27 +5,16 @@ class AtomPHPCSView
 
   classes: ['atom-phpcs-error', 'atom-phpcs-warning']
 
-  constructor: (@editorView) ->
-    @editor   = @editorView.editor
-    @gutter   = @editorView.gutter
+  constructor: () ->
+    @editor   = atom.workspace.getActiveTextEditor()
     @cserrors = {}
+    @filepath = null
 
-    @editorView.command 'core:save', =>
-      @updateErrors()
-    @editorView.command 'editor:path-changed', =>
-      @updateErrors()
-    @editorView.command 'editor:display-updated', =>
-      @renderErrors()
+    editorView.onDidSave(@updateErrors(@generateErrors))
 
-    @editorView.command 'atom-phpcs:codesniff', =>
-      @updateErrors()
+    editorView.onDidChange(@updateErrors(@generateErrors))
 
-  getConfig: (key)->
-    value = atom.config.defaultSettings['atom-phpcs'][key]
-    if (atom.config.settings['atom-phpcs']? && atom.config.settings['atom-phpcs'][key]? && atom.config.settings['atom-phpcs'][key] != null)
-        value = atom.config.settings['atom-phpcs'][key]
-    return value
-
+    editorView.onDidChangePath(@updateErrors(@generateErrors))
 
   moveToNextError: ->
     cursorLineNumber = @editor.getCursorBufferPosition().row + 1
@@ -67,54 +56,24 @@ class AtomPHPCSView
       @editor.setCursorBufferPosition([lineNumber, 0])
       @editor.moveCursorToFirstCharacterOfLine()
 
-  updateErrors: ->
-    @generateErrors(@renderErrors)
-
-  generateErrors: (callback)->
-    editor     = atom.workspace.getActiveEditor()
+  generateErrors: () ->
+    editor     = atom.workspace.getActiveTextEditor()
     filepath   = editor.getPath()
-    command    = @getConfig('path')
-    standard   = @getConfig('standard')
-    directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
-    output     = []
-    errorLines = []
-    new BufferedProcess({
-      command: command
-      args: ["-n", "--report=csv", "--standard="+standard, filepath]
-      options: {
-        cwd: directory
-      }
-      stdout: (cs_output) =>
-        output = cs_output.replace('\r', '').split('\n')
-      stderr: (cs_error) =>
-        errorLines = cs_error.replace('\r', '').split('\n')
-      exit: (code) =>
-        if code is 2
-          atom.confirm
-            message: "Cannot open file"
-            detailedMessage: errorLines.join('\n')
-            buttons: ['OK']
-        else
-          clean = []
-          output.shift()
-          lines = for i, line of output
-            if typeof line is 'undefined'
-              delete output[i]
-            else
-              clean.push(line.split(','))
-          @cserrors[filepath] = clean
-          callback.call()
-    })
+    AtomPHPCS.sniffFile filepath, @renderErrors
 
+  addError: (range, highlight) ->
+    editor     = atom.workspace.getActiveTextEditor()
+    marker     = editor.markBufferRange(range)
+    decoration = editor.decorateMarker(marker, {type: 'line', class: highlight})
+    @markers.push marker
 
   removeErrors: =>
-    if @gutter.hasErrorLines
-      @gutter.removeClassFromAllLines(cssClass) for cssClass in @classes
-      @gutter.hasErrorLines = false
+    for marker in @markers
+      marker.destroy()
+      marker = null
+    @markers = []
 
   renderErrors: =>
-    return unless @gutter.isVisible()
-
     @removeErrors()
 
     hunks            = @cserrors[@editor.getPath()] ? []
@@ -123,9 +82,11 @@ class AtomPHPCSView
       for errorLineNo, errorLine of hunks
         if typeof errorLine isnt 'undefined'
           [file, lineNo, column, errorType, errorMessage, errorCat, errorFlag] = errorLine
+          range = new Range([lineNo, column], [lineNo, (column + 1)])
           if errorType is 'error'
-            linesHighlighted |= @gutter.addClassToLine(lineNo - 1, 'atom-phpcs-error')
+            @addError(range, 'atom-phpcs-error')
           else if errorType is 'warning'
-            linesHighlighted |= @gutter.addClassToLine(lineNo - 1, 'atom-phpcs-warning')
+            @addError(range, 'atom-phpcs-warning')
 
-    @gutter.hasErrorLines = linesHighlighted
+  updateErrors: (callback) ->
+    callback.call()
