@@ -3,7 +3,7 @@
   "main": "./lib/atom-phpcs",
   "version": "0.7.0",
   "description": "Atom plugin for PHP_CodeSniffer",
-  "activationEvents": [],
+  "activationCommands": [],
   "repository": "https://github.com/bpearson/atom-phpcs",
   "license": "MIT",
   "engines": {

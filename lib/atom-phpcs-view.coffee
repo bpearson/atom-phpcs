@@ -1,4 +1,4 @@
-{$, BufferedProcess} = require 'atom'
+{BufferedProcess} = require 'atom'
 
 module.exports =
 class AtomPHPCSView
