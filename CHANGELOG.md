@@ -10,3 +10,5 @@
 * Bug fix.
 ## 0.7.0
 * Fixing editor API changes.
+## 0.8.0
+* Fixing editor API changes.
