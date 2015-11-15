@@ -1,4 +1,5 @@
 {BufferedProcess} = require 'atom'
+{TextEditor} = require 'atom'
 AtomPHPCSStatusView = require './atom-phpcs-status-view'
 
 module.exports = AtomPHPCS =
@@ -6,11 +7,20 @@ module.exports = AtomPHPCS =
 
     config:
         standard:
+            title: "Standard"
+            description: "The standard to use eg. PEAR, PSR-1"
             type: 'string'
             default: 'PEAR'
         path:
+            title: "PHPCS path"
+            description: "The path to PHPCS"
             type: 'string'
             default: 'phpcs'
+        errorsOnly:
+            title: "Errors only"
+            description: "If selected, only show the errors"
+            type: 'boolean'
+            default: false
 
     editor: null
 
@@ -28,33 +38,53 @@ module.exports = AtomPHPCS =
             path = editor.getPath();
             if typeof path != 'undefined'
                 if path.match('\.php$|\.inc$') isnt false
-                    @generateErrors();
+                    @generateErrors(editor);
 
     activate: () ->
         @statusBarTile = new AtomPHPCSStatusView()
         @statusBarTile.initialize()
-        editor   = atom.workspace.getActiveTextEditor()
         @markers = {}
         @cserrors = {}
         @filepath = null
-        eventCb = (event) ->
+        configCb = (event) ->
+            editors = atom.workspace.getTextEditors()
+            for editor in editors
+                if typeof editor == 'object'
+                    path = editor.getPath();
+                    if typeof path != 'undefined'
+                        if path.match('\.php$|\.inc$') isnt false
+                            AtomPHPCS.generateErrors(editor);
+        workspaceCb = (event) ->
+            editor = event.TextEditor
+            AtomPHPCS.activateEditor(editor)
+        atom.config.onDidChange(configCb)
+        atom.workspace.onDidAddTextEditor(workspaceCb)
+        atom.workspace.observeActivePaneItem(AtomPHPCS.activateEditor)
+        AtomPHPCS.activateEditors()
+
+    activateEditors: () ->
+        editors = atom.workspace.getTextEditors()
+        for editor in editors
+            if typeof editor == 'object'
+                AtomPHPCS.activateEditor(editor)
+
+    activateEditor: (editor) ->
+        if (editor instanceof TextEditor)
+            eventCb = (event) ->
+                AtomPHPCS.codesniff()
+            cursorCb = (event) ->
+                lineNo = (event.newScreenPosition.row + 1)
+                errorLine = AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo] ? {}
+                message = ''
+                if errorLine['message']?
+                    message = errorLine['message'].replace(/\\/g, '').replace(/^"/, '').replace(/"$/, '')
+
+                AtomPHPCS.updateStatus(message)
+            editor.onDidSave(eventCb)
+            editor.onDidChangePath(eventCb)
+            editor.onDidChangeCursorPosition(cursorCb)
+
             AtomPHPCS.codesniff()
-        cursorCb = (event) ->
-            lineNo = (event.newScreenPosition.row + 1)
-            errorLine = AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo] ? {}
-            message = ''
-            if errorLine['message']?
-                console.log errorLine['message']
-                message = errorLine['message'].replace('\\', '').replace(/^"/, '').replace(/"$/, '')
-
-            AtomPHPCS.updateStatus(message)
-
-        editor.onDidSave(eventCb)
-        editor.onDidChange(eventCb)
-        editor.onDidChangePath(eventCb)
-        editor.onDidChangeCursorPosition(cursorCb)
-
-        AtomPHPCS.codesniff()
 
     consumeStatusBar: (statusBar) ->
         statusBar.addLeftTile(item: AtomPHPCS.statusBarTile, priority: 100)
@@ -63,14 +93,16 @@ module.exports = AtomPHPCS =
         AtomPHPCS.statusBarTile?.destroy()
         AtomPHPCS.statusBarTile = null
 
-    sniffFile: (@filepath, callback) ->
+    sniffFile: (@filepath, @editor, callback) ->
       command    = atom.config.get('atom-phpcs.path');
       standard   = atom.config.get('atom-phpcs.standard');
       directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
       output     = []
       errorLines = []
 
-      args = ["-n", "--report=csv", "--standard="+standard, filepath]
+      args = ["--report=csv", "--standard="+standard, filepath]
+      if atom.config.get('atom-phpcs.errorsOnly') == true
+        args.unshift("-n")
 
       options = {cwd: directory}
 
@@ -106,7 +138,7 @@ module.exports = AtomPHPCS =
 
             AtomPHPCS.cserrors[AtomPHPCS.filepath] = clean
             if typeof callback is 'function'
-                callback.call()
+                callback.call(editor)
 
       new BufferedProcess({command, args, options, stdout, stderr, exit})
 
@@ -150,13 +182,11 @@ module.exports = AtomPHPCS =
             AtomPHPCS.editor.setCursorBufferPosition([lineNumber, 0])
             AtomPHPCS.editor.moveCursorToFirstCharacterOfLine()
 
-    generateErrors: () ->
-        editor   = atom.workspace.getActiveTextEditor()
+    generateErrors: (editor) ->
         filepath = editor.getPath()
-        AtomPHPCS.sniffFile(filepath, @renderErrors);
+        AtomPHPCS.sniffFile(filepath, editor, @renderErrors);
 
-    addError: (startRow, endRow, message, highlight) ->
-        editor     = atom.workspace.getActiveTextEditor()
+    addError: (editor, startRow, endRow, message, highlight) ->
         marker     = editor.markBufferRange([[startRow, 0], [endRow, 0]], invalidate: 'never')
         decoration = editor.decorateMarker(marker, {type: 'line-number', class: highlight})
         AtomPHPCS.markers.push(marker)
@@ -174,9 +204,9 @@ module.exports = AtomPHPCS =
         if hunks.length > 0
             for lineNo, errorLine of hunks
                 if errorLine['errorType'] is 'error'
-                    AtomPHPCS.addError(lineNo-1, lineNo-1, errorLine['message'], 'atom-phpcs-error')
+                    AtomPHPCS.addError(AtomPHPCS.editor, lineNo-1, lineNo-1, errorLine['message'], 'atom-phpcs-error')
                 else if errorLine['errorType'] is 'warning'
-                    AtomPHPCS.addError(lineNo-1, lineNo-1, errorLine['message'], 'atom-phpcs-warning')
+                    AtomPHPCS.addError(AtomPHPCS.editor, lineNo-1, lineNo-1, errorLine['message'], 'atom-phpcs-warning')
 
     updateStatus: (message) ->
         AtomPHPCS.statusBarTile.updateStatusBar(message)

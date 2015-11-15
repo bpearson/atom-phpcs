@@ -15,3 +15,6 @@
 ## 0.9.0
 * Fixing editor API changes.
 * Adding the status bar to show the current line message.
+## 1.0.0
+* Better event handling
+* New option to toggle between errors and warnings or just errors.
