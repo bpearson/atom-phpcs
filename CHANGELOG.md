@@ -12,3 +12,6 @@
 * Fixing editor API changes.
 ## 0.8.0
 * Fixing editor API changes.
+## 0.9.0
+* Fixing editor API changes.
+* Adding the status bar to show the current line message.

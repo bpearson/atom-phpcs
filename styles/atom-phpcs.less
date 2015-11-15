@@ -1,20 +1,19 @@
 @import "syntax-variables";
 
-.gutter .line-number {
-    &.atom-phpcs-error {
-      border-right: 2px solid @syntax-color-modified;
-      padding-right: 0px;
-      width: 60px
-    }
+atom-text-editor,
+atom-text-editor::shadow {
+    .gutter .line-number {
+        &.atom-phpcs-error {
+          border-left: 2px solid @syntax-color-removed;
+        }
 
-    &.atom-phpcs-warning {
-      border-right: 2px solid @syntax-color-added;
-      padding-right: ~"calc(calc(0.5em - 2px) * -1)";
-    }
+        &.atom-phpcs-warning {
+          border-left: 2px solid @syntax-color-modified;
+        }
 
-    &.atom-phpcs-spare {
-      border-right: 2px solid @syntax-color-removed;
-      padding-right: ~"calc(calc(0.5em - 2px) * -1)";
+        &.atom-phpcs-spare {
+          border-left: 2px solid @syntax-color-added;
+        }
     }
 }
 
