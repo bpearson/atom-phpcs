@@ -73,11 +73,13 @@ module.exports = AtomPHPCS =
             eventCb = (event) ->
                 AtomPHPCS.codesniff()
             cursorCb = (event) ->
-                lineNo = (event.newScreenPosition.row + 1)
-                errorLine = AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo] ? {}
                 message = ''
-                if errorLine['message']?
-                    message = errorLine['message'].replace(/\\/g, '').replace(/^"/, '').replace(/"$/, '')
+                lineNo = (event.newScreenPosition.row + 1)
+                if AtomPHPCS.cserrors[AtomPHPCS.filepath]?
+                    if AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo]?
+                        errorLine = AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo] ? {}
+                        if errorLine['message']?
+                            message = errorLine['message'].replace(/\\/g, '').replace(/^"/, '').replace(/"$/, '')
 
                 AtomPHPCS.updateStatus(message)
             editor.onDidSave(eventCb)
