@@ -20,3 +20,6 @@
 * New option to toggle between errors and warnings or just errors.
 ## 1.0.1
 * Bug fix
+## 1.1.0
+* Fixed the keymaps and menus
+* Added PHPCBF option

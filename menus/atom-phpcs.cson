@@ -5,7 +5,8 @@
     'submenu': [
       'label': 'PHP CodeSniffer'
       'submenu': [
-        { 'label': 'Run PHP CodeSniffer', 'command': 'atom-phpcs:codesniff' }
+        { 'label': 'Run PHP CodeSniffer', 'command': 'atom-phpcs:codesniff' },
+        { 'label': 'Run PHP PHP Code Beautifier and Fixer', 'command': 'atom-phpcs:codefixer' }
       ]
     ]
   }

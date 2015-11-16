@@ -1,4 +1,5 @@
 {BufferedProcess} = require 'atom'
+{CompositeDisposable} = require 'atom'
 {TextEditor} = require 'atom'
 AtomPHPCSStatusView = require './atom-phpcs-status-view'
 
@@ -16,6 +17,11 @@ module.exports = AtomPHPCS =
             description: "The path to PHPCS"
             type: 'string'
             default: 'phpcs'
+        cbfpath:
+            title: "PHPCBF path"
+            description: "The path to PHPCBF"
+            type: 'string'
+            default: 'phpcbf'
         errorsOnly:
             title: "Errors only"
             description: "If selected, only show the errors"
@@ -32,15 +38,8 @@ module.exports = AtomPHPCS =
 
     statusBarTile: null
 
-    codesniff: () ->
-        editor = atom.workspace.getActiveTextEditor();
-        if typeof editor == 'object'
-            path = editor.getPath();
-            if typeof path != 'undefined'
-                if path.match('\.php$|\.inc$') isnt false
-                    @generateErrors(editor);
-
     activate: () ->
+        @subscriptions = new CompositeDisposable()
         @statusBarTile = new AtomPHPCSStatusView()
         @statusBarTile.initialize()
         @markers = {}
@@ -60,6 +59,13 @@ module.exports = AtomPHPCS =
         atom.config.onDidChange(configCb)
         atom.workspace.onDidAddTextEditor(workspaceCb)
         atom.workspace.observeActivePaneItem(AtomPHPCS.activateEditor)
+
+        @subscriptions.add atom.commands.add 'atom-text-editor',
+            'atom-phpcs:codesniff': (event) ->
+                AtomPHPCS.codesniff()
+            'atom-phpcs:codefixer': (event) ->
+                AtomPHPCS.codefixer()
+
         AtomPHPCS.activateEditors()
 
     activateEditors: () ->
@@ -94,6 +100,64 @@ module.exports = AtomPHPCS =
     deactivate: ->
         AtomPHPCS.statusBarTile?.destroy()
         AtomPHPCS.statusBarTile = null
+
+    codesniff: () ->
+        editor = atom.workspace.getActiveTextEditor();
+        if typeof editor == 'object'
+            path = editor.getPath();
+            if typeof path != 'undefined'
+                if path.match('\.php$|\.inc$') isnt false
+                    @generateErrors(editor);
+
+    codefixer: () ->
+        editor = atom.workspace.getActiveTextEditor();
+        if typeof editor == 'object'
+            path = editor.getPath();
+            if typeof path != 'undefined'
+                if path.match('\.php$|\.inc$') isnt false
+                    fixerCb = (message) ->
+                        AtomPHPCS.removeErrors();
+                        AtomPHPCS.cserrors = {}
+                        AtomPHPCS.updateStatus(message);
+                        atom.workspace.open(path, []);
+                        AtomPHPCS.codesniff();
+                    AtomPHPCS.fixFile(path, editor, fixerCb);
+
+    fixFile: (@filepath, @editor, callback) ->
+        command    = atom.config.get('atom-phpcs.cbfpath');
+        standard   = atom.config.get('atom-phpcs.standard');
+        directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
+        output     = []
+        errorLines = []
+
+        args = ["--standard="+standard, filepath]
+        if atom.config.get('atom-phpcs.errorsOnly') == true
+            args.unshift("-n")
+
+        options = {cwd: directory}
+
+        stdout = (cs_output) ->
+            output = cs_output.replace("\r", "").split("\n")
+
+        stderr = (cs_error) ->
+            errorLines = cs_error.replace("\r", "").split("\n")
+
+        exit = (code) =>
+            message = ""
+            if code is 2
+                atom.confirm
+                    message: "Cannot open file"
+                    detailedMessage: errorLines.join('\n')
+                    buttons: ['OK']
+            else if code is 1
+                message = "Patched 1 file"
+            else
+                message = "No fixable errors found"
+
+            if typeof callback is 'function'
+                callback.call(message)
+
+        new BufferedProcess({command, args, options, stdout, stderr, exit})
 
     sniffFile: (@filepath, @editor, callback) ->
       command    = atom.config.get('atom-phpcs.path');
@@ -140,7 +204,7 @@ module.exports = AtomPHPCS =
 
             AtomPHPCS.cserrors[AtomPHPCS.filepath] = clean
             if typeof callback is 'function'
-                callback.call(editor)
+                callback.call()
 
       new BufferedProcess({command, args, options, stdout, stderr, exit})
 
