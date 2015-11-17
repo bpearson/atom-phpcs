@@ -23,6 +23,6 @@
 ## 1.1.0
 * Fixed the keymaps and menus
 * Added PHPCBF option
-## 1.1.1
+## 1.2.0
 * Fixed the settings triggering the error message about not finding the file.
 * Fixed a label
