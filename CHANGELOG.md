@@ -26,3 +26,5 @@
 ## 1.2.0
 * Fixed the settings triggering the error message about not finding the file.
 * Fixed a label
+## 1.2.1
+* Further fix for the settings to better handle the error handling if the path is wrong.

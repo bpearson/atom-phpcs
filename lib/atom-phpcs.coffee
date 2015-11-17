@@ -1,6 +1,7 @@
 {BufferedProcess} = require 'atom'
 {CompositeDisposable} = require 'atom'
 {TextEditor} = require 'atom'
+{File} = require 'atom'
 AtomPHPCSStatusView = require './atom-phpcs-status-view'
 
 module.exports = AtomPHPCS =
@@ -144,7 +145,9 @@ module.exports = AtomPHPCS =
 
         exit = (code) =>
             message = ""
-            if code is 1
+            if code is 2
+                console.log 'PHPCBF is setup incorrectly'
+            else if code is 1
                 message = "Patched 1 file"
             else
                 message = "No fixable errors found"
@@ -152,51 +155,67 @@ module.exports = AtomPHPCS =
             if typeof callback is 'function'
                 callback.call(message)
 
-        new BufferedProcess({command, args, options, stdout, stderr, exit})
+        phpcsFile = new File(command)
+        if phpcsFile.existsSync() is true
+            new BufferedProcess({command, args, options, stdout, stderr, exit})
+        else
+            console.log 'PHPCBF is setup incorrectly'
 
     sniffFile: (@filepath, @editor, callback) ->
-      command    = atom.config.get('atom-phpcs.path');
-      standard   = atom.config.get('atom-phpcs.standard');
-      directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
-      output     = []
-      errorLines = []
+        command    = atom.config.get('atom-phpcs.path');
+        standard   = atom.config.get('atom-phpcs.standard');
+        directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
+        output     = []
+        errorLines = []
 
-      args = ["--report=csv", "--standard="+standard, filepath]
-      if atom.config.get('atom-phpcs.errorsOnly') == true
-        args.unshift("-n")
+        args = ["--report=csv", "--standard="+standard, filepath]
+        if atom.config.get('atom-phpcs.errorsOnly') == true
+            args.unshift("-n")
 
-      options = {cwd: directory}
+        options = {cwd: directory}
 
-      stdout = (cs_output) ->
-        output = cs_output.replace("\r", "").split("\n")
+        stdout = (cs_output) ->
+            output = cs_output.replace("\r", "").split("\n")
 
-      stderr = (cs_error) ->
-        errorLines = cs_error.replace("\r", "").split("\n")
+        stderr = (cs_error) ->
+            errorLines = cs_error.replace("\r", "").split("\n")
 
-      exit = (code) =>
-        if code is 1
-            clean = []
-            output.shift()
-            for i, line of output
-                if typeof line is 'undefined'
-                    delete output[i]
-                else
-                    line = line.split(',')
-                    if typeof line != 'undefined'
-                        [file, lineNo, column, errorType, errorMessage, errorCat, errorFlag] = line
-                        clean[lineNo] = {
-                            file: file,
-                            lineNo: lineNo,
-                            column: column,
-                            errorType: errorType,
-                            message: errorMessage
-                        }
+        exit = (code) =>
+            if code is 1
+                clean = []
+                output.shift()
+                for i, line of output
+                    if typeof line is 'undefined'
+                        delete output[i]
+                    else
+                        line = line.split(',')
+                        if typeof line != 'undefined'
+                            [file, lineNo, column, errorType, errorMessage, errorCat, errorFlag] = line
+                            clean[lineNo] = {
+                                file: file,
+                                lineNo: lineNo,
+                                column: column,
+                                errorType: errorType,
+                                message: errorMessage
+                            }
 
-            AtomPHPCS.cserrors[AtomPHPCS.filepath] = clean
-            if typeof callback is 'function'
-                callback.call()
+                AtomPHPCS.cserrors[AtomPHPCS.filepath] = clean
+                if typeof callback is 'function'
+                    callback.call()
+            else
+                if code is 2
+                    console.log 'PHPCS is setup incorrectly'
+                AtomPHPCS.cserrors = {}
+                AtomPHPCS.removeErrors()
 
-      new BufferedProcess({command, args, options, stdout, stderr, exit})
+
+        phpcsFile = new File(command)
+        if phpcsFile.existsSync() is true
+            new BufferedProcess({command, args, options, stdout, stderr, exit})
+        else
+            console.log 'PHPCS is setup incorrectly'
+            AtomPHPCS.cserrors = {}
+            AtomPHPCS.removeErrors()
 
     moveToNextError: () ->
         cursorLineNumber = @editor.getCursorBufferPosition().row + 1
