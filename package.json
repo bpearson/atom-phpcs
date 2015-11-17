@@ -1,7 +1,7 @@
 {
   "name": "atom-phpcs",
   "main": "./lib/atom-phpcs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Atom plugin for PHP_CodeSniffer",
   "activationCommands": [],
   "repository": "https://github.com/bpearson/atom-phpcs",
