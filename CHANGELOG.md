@@ -28,3 +28,5 @@
 * Fixed a label
 ## 1.2.1
 * Further fix for the settings to better handle the error handling if the path is wrong.
+## 1.2.2
+* Missed the default values.

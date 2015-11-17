@@ -156,7 +156,7 @@ module.exports = AtomPHPCS =
                 callback.call(message)
 
         phpcsFile = new File(command)
-        if phpcsFile.existsSync() is true
+        if command == 'phpcbf' || phpcsFile.existsSync() is true
             new BufferedProcess({command, args, options, stdout, stderr, exit})
         else
             console.log 'PHPCBF is setup incorrectly'
@@ -169,7 +169,7 @@ module.exports = AtomPHPCS =
         errorLines = []
 
         args = ["--report=csv", "--standard="+standard, filepath]
-        if atom.config.get('atom-phpcs.errorsOnly') == true
+        if atom.config.get('atom-phpcs.errorsOnly') is true
             args.unshift("-n")
 
         options = {cwd: directory}
@@ -210,7 +210,7 @@ module.exports = AtomPHPCS =
 
 
         phpcsFile = new File(command)
-        if phpcsFile.existsSync() is true
+        if command == 'phpcs' || phpcsFile.existsSync() is true
             new BufferedProcess({command, args, options, stdout, stderr, exit})
         else
             console.log 'PHPCS is setup incorrectly'
