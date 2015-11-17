@@ -9,7 +9,7 @@ module.exports = AtomPHPCS =
     config:
         standard:
             title: "Standard"
-            description: "The standard to use eg. PEAR, PSR-1"
+            description: "The standard to use eg. PEAR, PSR1"
             type: 'string'
             default: 'PEAR'
         path:
@@ -144,12 +144,7 @@ module.exports = AtomPHPCS =
 
         exit = (code) =>
             message = ""
-            if code is 2
-                atom.confirm
-                    message: "Cannot open file"
-                    detailedMessage: errorLines.join('\n')
-                    buttons: ['OK']
-            else if code is 1
+            if code is 1
                 message = "Patched 1 file"
             else
                 message = "No fixable errors found"
@@ -179,12 +174,7 @@ module.exports = AtomPHPCS =
         errorLines = cs_error.replace("\r", "").split("\n")
 
       exit = (code) =>
-        if code is 2
-            atom.confirm
-                message: "Cannot open file"
-                detailedMessage: errorLines.join('\n')
-                buttons: ['OK']
-        else
+        if code is 1
             clean = []
             output.shift()
             for i, line of output
