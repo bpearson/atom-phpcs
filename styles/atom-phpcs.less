@@ -2,32 +2,21 @@
 
 atom-text-editor,
 atom-text-editor::shadow {
-    .gutter .line-number {
-        &.atom-phpcs-error {
-          border-left: 2px solid @syntax-color-removed;
+    .gutter .line-numbers {
+        .line-number {
+            margin-right: 5px;
         }
 
-        &.atom-phpcs-warning {
-          border-left: 2px solid @syntax-color-modified;
+        .atom-phpcs-error {
+          box-shadow: -2px 0px 0px 0px @syntax-color-removed inset;
         }
 
-        &.atom-phpcs-spare {
-          border-left: 2px solid @syntax-color-added;
+        .atom-phpcs-warning {
+          box-shadow: -2px 0px 0px 0px @syntax-color-modified inset;
+        }
+
+        .atom-phpcs-spare {
+          box-shadow: -2px 0px 0px 0px @syntax-color-added inset;
         }
     }
-}
-
-&.atom-phpcs-error:before {
-    content: "";
-    color: @syntax-color-modified;
-}
-
-&.atom-phpcs-warning:before {
-    content: "";
-    color: @syntax-color-added;
-}
-
-&.atom-phpcs-spare:before {
-    content: "";
-    color: @syntax-color-removed;
 }

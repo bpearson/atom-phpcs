@@ -2,19 +2,16 @@
 
 class AtomPHPCSStatusView extends HTMLElement
     initialize: ->
+        @tooltip = null
         @classList.add('atom-phpcs-status', 'inline-block')
-        @goToLineLink = document.createElement('a')
-        @goToLineLink.classList.add('inline-block')
-        @goToLineLink.href = '#'
-        @appendChild(@goToLineLink)
+        @statusMessage = document.createElement('span')
+        @appendChild(@statusMessage)
 
         @activeItemSubscription = atom.workspace.onDidChangeActivePaneItem (activeItem) =>
             @subscribeToActiveTextEditor()
 
         @subscribeToConfig()
         @subscribeToActiveTextEditor()
-
-        @handleClick()
 
     destroy: ->
         @activeItemSubscription.dispose()
@@ -33,20 +30,20 @@ class AtomPHPCSStatusView extends HTMLElement
         @configSubscription = atom.config.observe 'status-bar.cursorPositionFormat', (value) =>
             @updateStatusBar('')
 
-    handleClick: ->
-        clickHandler = => atom.commands.dispatch(atom.views.getView(@getActiveTextEditor()), 'go-to-line:toggle')
-        @addEventListener('click', clickHandler)
-        @clickSubscription = new Disposable => @removeEventListener('click', clickHandler)
-
     getActiveTextEditor: ->
         atom.workspace.getActiveTextEditor()
 
     updateStatusBar: (message) ->
+        if @tooltip?
+            @tooltip.dispose()
+
         if message?
-            @goToLineLink.textContent = message
+            @statusMessage.textContent = message
             @classList.remove('hide')
         else
-            @goToLineLink.textContent = ''
+            @statusMessage.textContent = ''
             @classList.add('hide')
+
+        @tooltip = atom.tooltips.add(@statusMessage, {title: message})
 
 module.exports = document.registerElement('atom-phpcs-status', prototype: AtomPHPCSStatusView.prototype, extends: 'div')

@@ -80,15 +80,9 @@ module.exports = AtomPHPCS =
             eventCb = (event) ->
                 AtomPHPCS.codesniff()
             cursorCb = (event) ->
-                message = ''
+                path   = AtomPHPCS.filepath
                 lineNo = (event.newScreenPosition.row + 1)
-                if AtomPHPCS.cserrors[AtomPHPCS.filepath]?
-                    if AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo]?
-                        errorLine = AtomPHPCS.cserrors[AtomPHPCS.filepath][lineNo] ? {}
-                        if errorLine['message']?
-                            message = errorLine['message'].replace(/\\/g, '').replace(/^"/, '').replace(/"$/, '')
-
-                AtomPHPCS.updateStatus(message)
+                AtomPHPCS.showErrorMessage(path, lineNo)
             editor.onDidSave(eventCb)
             editor.onDidChangePath(eventCb)
             editor.onDidChangeCursorPosition(cursorCb)
@@ -117,14 +111,14 @@ module.exports = AtomPHPCS =
             if typeof path != 'undefined'
                 if path.match('\.php$|\.inc$') isnt false
                     fixerCb = (message) ->
-                        AtomPHPCS.removeErrors();
-                        AtomPHPCS.cserrors = {}
                         AtomPHPCS.updateStatus(message);
                         atom.workspace.open(path, []);
                         AtomPHPCS.codesniff();
                     AtomPHPCS.fixFile(path, editor, fixerCb);
 
     fixFile: (@filepath, @editor, callback) ->
+        AtomPHPCS.removeErrors();
+        AtomPHPCS.cserrors = {}
         command    = atom.config.get('atom-phpcs.cbfpath');
         standard   = atom.config.get('atom-phpcs.standard');
         directory  = filepath.replace(/\\/g, '/').replace(/\/[^\/]*$/, '')
@@ -205,8 +199,6 @@ module.exports = AtomPHPCS =
             else
                 if code is 2
                     console.log 'PHPCS is setup incorrectly'
-                AtomPHPCS.cserrors = {}
-                AtomPHPCS.removeErrors()
 
 
         phpcsFile = new File(command)
@@ -214,8 +206,16 @@ module.exports = AtomPHPCS =
             new BufferedProcess({command, args, options, stdout, stderr, exit})
         else
             console.log 'PHPCS is setup incorrectly'
-            AtomPHPCS.cserrors = {}
-            AtomPHPCS.removeErrors()
+
+    showErrorMessage: (path, lineNo) ->
+        message = ''
+        if AtomPHPCS.cserrors[path]?
+            if AtomPHPCS.cserrors[path][lineNo]?
+                errorLine = AtomPHPCS.cserrors[path][lineNo] ? {}
+                if errorLine['message']?
+                    message = errorLine['message'].replace(/\\/g, '').replace(/^"/, '').replace(/"$/, '')
+
+        AtomPHPCS.updateStatus(message)
 
     moveToNextError: () ->
         cursorLineNumber = @editor.getCursorBufferPosition().row + 1
@@ -282,6 +282,11 @@ module.exports = AtomPHPCS =
                     AtomPHPCS.addError(AtomPHPCS.editor, lineNo-1, lineNo-1, errorLine['message'], 'atom-phpcs-error')
                 else if errorLine['errorType'] is 'warning'
                     AtomPHPCS.addError(AtomPHPCS.editor, lineNo-1, lineNo-1, errorLine['message'], 'atom-phpcs-warning')
+        currentEditor = atom.workspace.getActiveTextEditor()
+        if currentEditor?
+            path   = currentEditor.getPath()
+            lineNo = (currentEditor.getCursorScreenPosition().row + 1)
+            AtomPHPCS.showErrorMessage(path, lineNo)
 
     updateStatus: (message) ->
         AtomPHPCS.statusBarTile.updateStatusBar(message)

@@ -30,3 +30,8 @@
 * Further fix for the settings to better handle the error handling if the path is wrong.
 ## 1.2.2
 * Missed the default values.
+## 1.3
+* Moved the gutter markers to the right to stop conflicting with git diff package.
+* Cleaned up the status bar and add a tooltip to it for the long messages.
+* Fixed an issue with saving not updating the status bar.
+* Updating docs.
