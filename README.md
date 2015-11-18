@@ -2,6 +2,9 @@
 
 An Atom plugin to run PHP_CodeSniffer over the currently opened file on save. The plugin will also allow access to run phpcbf over the current file via a keymap or the menu. Running phpcbf action is not reversible.
 
+# Screenshot
+![](https://github.com/bpearson/atom-phpcs/blob/master/screenshot.png)
+
 # Keymaps
 **Run phpcs:** `Ctrl+Alt+s`
 
