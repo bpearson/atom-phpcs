@@ -35,3 +35,7 @@
 * Cleaned up the status bar and add a tooltip to it for the long messages.
 * Fixed an issue with saving not updating the status bar.
 * Updating docs.
+## 1.4
+* Preparing for Coffeescript upgrade.
+* Using JSON reports in phpcs, to avoid the bad bug with csv reports getting the wrong error message.
+* Fixing some formatting.
