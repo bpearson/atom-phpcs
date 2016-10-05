@@ -39,3 +39,5 @@
 * Preparing for Coffeescript upgrade.
 * Using JSON reports in phpcs, to avoid the bad bug with csv reports getting the wrong error message.
 * Fixing some formatting.
+## 1.4.1
+* Better error checking for the previous change.

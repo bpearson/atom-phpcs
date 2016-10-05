@@ -182,7 +182,7 @@ module.exports = AtomPHPCS =
             delete output[i]
           else
             report = JSON.parse(line)
-            if report['files'][AtomPHPCS.filepath]['messages']
+            if report['files'][AtomPHPCS.filepath]['messages']?
               for j, message of report['files'][AtomPHPCS.filepath]['messages']
                 clean[message['line']] = {
                   file: AtomPHPCS.filepath,
