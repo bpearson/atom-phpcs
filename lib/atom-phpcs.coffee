@@ -182,15 +182,16 @@ module.exports = AtomPHPCS =
             delete output[i]
           else
             report = JSON.parse(line)
-            if report['files'][AtomPHPCS.filepath]['messages']?
-              for j, message of report['files'][AtomPHPCS.filepath]['messages']
-                clean[message['line']] = {
-                  file: AtomPHPCS.filepath,
-                  lineNo: message['line'],
-                  column: message['column'],
-                  errorType: message['type'],
-                  message: message['message']
-                }
+            if report['files'][AtomPHPCS.filepath]?
+              if report['files'][AtomPHPCS.filepath]['messages']?
+                for j, message of report['files'][AtomPHPCS.filepath]['messages']
+                  clean[message['line']] = {
+                    file: AtomPHPCS.filepath,
+                    lineNo: message['line'],
+                    column: message['column'],
+                    errorType: message['type'],
+                    message: message['message']
+                  }
 
         AtomPHPCS.cserrors[AtomPHPCS.filepath] = clean
         if typeof callback is 'function'

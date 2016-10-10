@@ -41,3 +41,5 @@
 * Fixing some formatting.
 ## 1.4.1
 * Better error checking for the previous change.
+## 1.4.2
+* Check the file array exists before messages.
