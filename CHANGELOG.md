@@ -43,5 +43,5 @@
 * Better error checking for the previous change.
 ## 1.4.2
 * Check the file array exists before messages.
-## 1.4.3
+## 1.5.0
 * String.match returns null instead of false (Thanks to [antbrown](https://github.com/antbrown))
