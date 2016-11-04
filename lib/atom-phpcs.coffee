@@ -52,7 +52,7 @@ module.exports = AtomPHPCS =
         if typeof editor == 'object'
           path = editor.getPath()
           if typeof path != 'undefined'
-            if path.match('\.php$|\.inc$') isnt false
+            if path.match('\.php$|\.inc$') isnt null
               AtomPHPCS.generateErrors(editor)
     workspaceCb = (event) ->
       editor = event.TextEditor
@@ -101,7 +101,7 @@ module.exports = AtomPHPCS =
     if typeof editor == 'object'
       path = editor.getPath()
       if typeof path != 'undefined'
-        if path.match('\.php$|\.inc$') isnt false
+        if path.match('\.php$|\.inc$') isnt null
           @generateErrors(editor)
 
   codefixer: () ->
@@ -109,7 +109,7 @@ module.exports = AtomPHPCS =
     if typeof editor == 'object'
       path = editor.getPath()
       if typeof path != 'undefined'
-        if path.match('\.php$|\.inc$') isnt false
+        if path.match('\.php$|\.inc$') isnt null
           fixerCb = (message) ->
             AtomPHPCS.updateStatus(message)
             atom.workspace.open(path, [])
