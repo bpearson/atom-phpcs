@@ -45,3 +45,5 @@
 * Check the file array exists before messages.
 ## 1.5.0
 * String.match returns null instead of false (Thanks to [antbrown](https://github.com/antbrown))
+## 1.6.0
+* Fixing depreciations. Also fixing some cases where fixing would not remove the marker.

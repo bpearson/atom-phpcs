@@ -41,6 +41,7 @@ module.exports = AtomPHPCS =
 
   activate: () ->
     @subscriptions = new CompositeDisposable()
+    @editorSubs    = new CompositeDisposable()
     @statusBarTile = new AtomPHPCSStatusView()
     @statusBarTile.initialize()
     @markers = {}
@@ -59,7 +60,7 @@ module.exports = AtomPHPCS =
       AtomPHPCS.activateEditor(editor)
     atom.config.onDidChange(configCb)
     atom.workspace.onDidAddTextEditor(workspaceCb)
-    atom.workspace.observeActivePaneItem(AtomPHPCS.activateEditor)
+    atom.workspace.observeActivePaneItem(workspaceCb)
 
     @subscriptions.add atom.commands.add 'atom-text-editor',
       'atom-phpcs:codesniff': (event) ->
@@ -70,22 +71,23 @@ module.exports = AtomPHPCS =
     AtomPHPCS.activateEditors()
 
   activateEditors: () ->
-    editors = atom.workspace.getTextEditors()
-    for editor in editors
+    @editorSubs.dispose
+    atom.workspace.observeTextEditors (editor) ->
       if typeof editor == 'object'
         AtomPHPCS.activateEditor(editor)
 
   activateEditor: (editor) ->
     if (editor instanceof TextEditor)
       eventCb = (event) ->
-        AtomPHPCS.codesniff()
+        if (editor.getPath() == atom.workspace.getActiveTextEditor().getPath())
+          AtomPHPCS.codesniff()
       cursorCb = (event) ->
         path   = AtomPHPCS.filepath
         lineNo = (event.newScreenPosition.row + 1)
         AtomPHPCS.showErrorMessage(path, lineNo)
-      editor.onDidSave(eventCb)
-      editor.onDidChangePath(eventCb)
-      editor.onDidChangeCursorPosition(cursorCb)
+      @editorSubs.add editor.onDidSave(eventCb)
+      @editorSubs.add editor.onDidChangePath(eventCb)
+      @editorSubs.add editor.onDidChangeCursorPosition(cursorCb)
 
       AtomPHPCS.codesniff()
 
@@ -259,6 +261,7 @@ module.exports = AtomPHPCS =
 
   generateErrors: (editor) ->
     filepath = editor.getPath()
+    AtomPHPCS.removeErrors()
     AtomPHPCS.sniffFile(filepath, editor, @renderErrors)
 
   addError: (editor, startRow, endRow, message, highlight) ->
