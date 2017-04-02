@@ -28,6 +28,11 @@ module.exports = AtomPHPCS =
       description: "If selected, only show the errors"
       type: 'boolean'
       default: false
+    noPatch:
+      title: "'No patch' mode"
+      description: "If selected, do not use 'diff' command, especially for Windows systems"
+      type: 'boolean'
+      default: false
 
   editor: null
 
@@ -130,6 +135,8 @@ module.exports = AtomPHPCS =
     args = ["--standard="+standard, @filepath]
     if atom.config.get('atom-phpcs.errorsOnly') == true
       args.unshift("-n")
+    if atom.config.get('atom-phpcs.noPatch') == true
+      args.unshift("--no-patch")
 
     options = {cwd: directory}
 
