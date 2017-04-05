@@ -67,5 +67,8 @@
 ## 1.6.0
 * Fixing depreciations. Also fixing some cases where fixing would not remove the marker.
 
-## 1.6.1
+## 1.7.1
 * Fixing a TypeError.
+
+## 1.7.2
+* Fixing CHANGELOG -_-
