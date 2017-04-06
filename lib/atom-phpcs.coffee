@@ -61,7 +61,7 @@ module.exports = AtomPHPCS =
             if path.match('\.php$|\.inc$') isnt null
               AtomPHPCS.generateErrors(editor)
     workspaceCb = (event) ->
-      if event.TextEditor?
+      if event?.TextEditor?
         editor = event.TextEditor
         AtomPHPCS.activateEditor(editor)
     atom.config.onDidChange(configCb)
