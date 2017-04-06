@@ -72,3 +72,6 @@
 
 ## 1.7.2
 * Fixing CHANGELOG -_-
+
+## 1.7.3
+* Fixing another TypeError.
