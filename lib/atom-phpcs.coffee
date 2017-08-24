@@ -185,7 +185,7 @@ module.exports = AtomPHPCS =
       errorLines = cs_error.replace("\r", "").split("\n")
 
     exit = (code) ->
-      if code is 1
+      if (code == 1 || code == 2)
         clean = []
         for i, line of output
           if typeof line is 'undefined'
@@ -206,10 +206,6 @@ module.exports = AtomPHPCS =
         AtomPHPCS.cserrors[AtomPHPCS.filepath] = clean
         if typeof callback is 'function'
           callback.call()
-      else
-        if code is 2
-          console.log 'PHPCS is setup incorrectly'
-
 
     phpcsFile = new File(command)
     if command == 'phpcs' || phpcsFile.existsSync() is true

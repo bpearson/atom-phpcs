@@ -75,3 +75,7 @@
 
 ## 1.7.3
 * Fixing another TypeError.
+
+## 1.8.0
+* PHPCS returns exit code 2 incorrectly?
+* Fixing the editor style.
