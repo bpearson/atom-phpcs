@@ -1,6 +1,6 @@
 # atom-phpcs package
 
-** Current status: ** Maintenance
+**Current status:** Maintenance
 
 An Atom plugin to run PHP_CodeSniffer over the currently opened file on save. The plugin will also allow access to run phpcbf over the current file via a keymap or the menu. Running phpcbf action is not reversible.
 
